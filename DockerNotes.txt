@@ -1,0 +1,104 @@
+What is Docker?
+
+Docker is a tool designed to make it easier to build,deploy and run applications by using containers.
+
+Why Docker?
+Sometimes it happen we have same code in each environment still it runs in dev environment but not working in  prod env.
+This happens due to following condn.
+1) Dependency version mismatch from one env to another.
+  Ex:- In dev env we are using Spring 3.x version but in prod env we are using Spring 4.x version so features available        here got mimatched due to version.
+2) Library Corrupted.
+  Ex:- Tomcat jar is working fine with dev but gets corrupted in prod.
+3) Software Upgrade.
+  Ex:- Suppose in dev env we use jdk 8 but prod env is using jdk7 so here code written with JAVA 8 features will not run in prod env.
+
+How Docker Resolve this issue?
+Containers allow a developer to package up an application with all of the parts it needs such as libraries
+and other dependencies and ship it all out as one package.
+With a help of docker engine will ship container to each env.
+
+Docker Architecture Below:- 
+
+Container 1    Container 2
+    |             |
+ ------        --------
+| App 1|      | App 2  |
+ ------        --------
+BINS/LIBS        BINS/LIBS
+---------------------------
+ Docker Engine
+---------------------------
+HOST OS
+-----------------------------
+
+Note:- BINS = binary files , LIBS = library files
+Here container1 contains all reqd. binaries and libraries files. Docker engine contains 2 containers and it sits on 
+HOST OS which needs less memory compare to virtual OS.
+
+Docker Terminology
+-------------------------
+Image: Representation of Docker container i.e. a JAR or WAR file in Java
+Container: Runtime of Docker i.e. a deployed and running Docker image. For example, an executable Spring Boot jar
+Engine: The code that manages, creates and runs the Docker containers
+Hub: A public developers registry to distribute their code
+Repository: A collection of Docker related images i.e. different versions of the same application
+
+Docker Workflow
+----------------
+As a developer i wrote docker file , then with the help of docker command create docker image(completely skeleton of
+application with all reqd. dependencies of proper version and upgraded software). Docker container is nothing it running instance of our docker image . Once docker image is created,
+i need to keep it in docker hub(it is a repository). From docker hub stage server or production server pulling the 
+docker image.
+
+How to install Docker on Windows?
+
+1) Go this website  :- https://docs.docker.com/desktop/install/windows-install/ ----> Click on Docker Desktop for Windows
+2) After installing this software , a pop will open ---Click on accept
+3) A new window will pop with link, click on that link then from that link download latest package(i.e. Step 4 in that website)
+4) open cmd -> run as administration ->Run this command(i.e Step 1 present in that website from where you download latest package) -> dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+5) After that run this command(i.e Step 3 from that website) :- dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+6) Now just intsall the software that you installed in step 3. 
+7) After that click on restart on the pop window, which you get from step 3.
+8) Docker will start and up running.
+
+The process of Writing the docker file, creating the docker image and running on top of docker container is known as dockerize.
+Note:- We can dockerize any java application, it is not mandatory that only spring boot is only dockerize.
+
+
+Steps to create docker file and jar
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Create Spring boot application
+2) Create docker file i.e. Right click on project -> File -> Name your file with naming convention as Dockerfile.
+3) Write below things in that file
+   FROM openjdk:8         {start with a base image containing java runtime}
+   EXPOSE 8080            {make this port available to the world outside this container}
+   ADD target/spring-boot-docker.jar spring-boot-docker.jar
+   ENTRYPOINT ["java","-jar","/spring-boot-docker.jar"]          {This means run the jar file}
+4) Add this line in pom.xml after </plugins> tag
+		<finalName>spring-boot-docker</finalName>
+And this finalName's name will be used in ADD and ENTRYPOINT command(i.e. Step 3)
+5)Now run your project as maven install . After sometime refresh project, in target folder you will see jar is generated
+with the name you have given(i.e. spring-boot-docker.jar)
+
+Steps to create Docker Image from the docker file
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Open cmd and go to project location (ex:-cd C:\Users\mypc\eclipse-workspace\spring-boot-Docker)
+then run this command --> docker build -t spring-boot-docker.jar .
+2) Run docker image ls to check your image.
+
+"172.17.0.2
+Steps to run Docker Container
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Run this command :- docker run -p 9090:8080 spring-boot-docker.jar [9090 is the port where container will run , 8080 is the project port]
+2) Now go to chrome and hit url http://ipaddressinwhichdockerisrunning:9090/giveyourapiurl
+
+Steps to push in Docker Hub
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Run command in cmd ----> docker login give username & password after that it will show Login Succeeded
+2) Create new image with tag by running this command :- docker tag spring-boot-docker.jar swetajaiswal121/spring-boot-docker.jar
+3)Check new tag image is created or not from above step by running this command :- docker image ls
+4) docker push swetajaiswal121/spring-boot-docker.jar
+
+Steps to pull image from Docker Hub
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Run this command :- docker pull swetajaiswal121/spring-boot-docker.jar (name of your image you want to pull)
